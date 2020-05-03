@@ -53,6 +53,7 @@ class MapViewController: UIViewController {
     var lastAnnotation: MKAnnotation!
     var locationManager = CLLocationManager()
     var userLocated = false
+    var specimens = try! Realm().objects(Specimen.self)
     
     //
     // MARK: - IBActions
@@ -66,10 +67,25 @@ class MapViewController: UIViewController {
     }
     
     @IBAction func unwindFromAddNewEntry(segue: UIStoryboardSegue) {
+        let addNewEntryController = segue.source as! AddNewEntryViewController
+        let addedSpecimen = addNewEntryController.specimen!
+        let addedSpecimenCoordinate = CLLocationCoordinate2D(latitude: addedSpecimen.latitude, longitude: addedSpecimen.longitude)
+        
         if let lastAnnotation = lastAnnotation {
             mapView.removeAnnotation(lastAnnotation)
+        } else {
+            for annotation in mapView.annotations {
+                if let currentAnnotation = annotation as? SpecimenAnnotation {
+                    if currentAnnotation.coordinate.latitude == addedSpecimenCoordinate.latitude && currentAnnotation.coordinate.longitude == addedSpecimenCoordinate.longitude {
+                        mapView.removeAnnotation(currentAnnotation)
+                        break
+                    }
+                }
+            }
         }
+        let annotation = SpecimenAnnotation(coordinate: addedSpecimenCoordinate, title: addedSpecimen.name, subtitle: addedSpecimen.category.name, specimen: addedSpecimen)
         
+        mapView.addAnnotation(annotation)
         lastAnnotation = nil
     }
     
@@ -105,6 +121,20 @@ class MapViewController: UIViewController {
         mapView.setRegion(zoomRegion, animated: true)
     }
     
+    func populateMap() {
+        mapView.removeAnnotations(mapView.annotations)
+        
+        specimens = try! Realm().objects(Specimen.self)
+        
+        // Create annotations for reach one
+        for specimen in specimens {
+            let coord = CLLocationCoordinate2D(latitude: specimen.latitude, longitude: specimen.longitude)
+            let specimenAnnotation = SpecimenAnnotation(coordinate: coord, title: specimen.name, subtitle: specimen.category.name, specimen: specimen)
+            
+            mapView.addAnnotation(specimenAnnotation)
+        }
+    }
+    
     //
     // MARK: - View Controller
     //
@@ -124,6 +154,8 @@ class MapViewController: UIViewController {
         // Determine where your Realm database is stored
         // Then look for the path to default.realm
         print("Realm database is stored at: \(Realm.Configuration.defaultConfiguration.fileURL!)")
+        
+        populateMap()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
