@@ -87,6 +87,15 @@ public class PetViewModel {
     }
 }
 
+extension PetViewModel {
+    public func configure(_ view: PetView) {
+        view.nameLabel.text = name
+        view.imageView.image = image
+        view.ageLabel.text = ageText
+        view.adoptionFeeLabel.text = adoptionFeeText
+    }
+}
+
 // MARK: View
 public class PetView: UIView {
     public let imageView: UIImageView
@@ -142,10 +151,7 @@ let frame = CGRect(x: 0, y: 0, width: 300, height: 420)
 let view = PetView(frame: frame)
 
 // 4
-view.nameLabel.text = viewModel.name
-view.imageView.image = viewModel.image
-view.ageLabel.text = viewModel.ageText
-view.adoptionFeeLabel.text = viewModel.adoptionFeeText
+viewModel.configure(view)
 
 // 5
 PlaygroundPage.current.liveView = view
