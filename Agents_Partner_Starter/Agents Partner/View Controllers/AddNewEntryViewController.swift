@@ -97,9 +97,34 @@ class AddNewEntryViewController: UIViewController {
         }
     }
     
+    //
+    // MARK: - Helper methods for editing specimen
+    //
+    func fillTextFields() {
+        nameTextField.text = specimen.name
+        categoryTextField.text = specimen.category.name
+        descriptionTextField.text = specimen.specimenDescription
+        
+        selectedCategory = specimen.category
+    }
+    
+    func updateSpecimen() {
+        let realm = try! Realm()
+        
+        try! realm.write {
+            specimen.name = nameTextField.text!
+            specimen.category = selectedCategory
+            specimen.specimenDescription = descriptionTextField.text
+        }
+    }
+    
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         if validateFields() {
-            addNewSpecimen()
+            if specimen != nil {
+                updateSpecimen()
+            } else {
+                addNewSpecimen()
+            }
             
             return true
         } else {
@@ -112,6 +137,15 @@ class AddNewEntryViewController: UIViewController {
     //
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // If we are editing a specimen fill the text fields, else it means you're adding a new one
+        if let specimen = specimen {
+            title = "Edit \(specimen.name)"
+            
+            fillTextFields()
+        } else {
+            title = "Add new specimen"
+        }
     }
     
 }

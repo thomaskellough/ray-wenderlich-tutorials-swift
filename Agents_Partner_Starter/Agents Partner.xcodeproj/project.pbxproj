@@ -183,6 +183,7 @@
 				TargetAttributes = {
 					553A7750217F98CA008B1BAF = {
 						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1140;
 					};
 				};
 			};
@@ -428,7 +429,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.kellough.Agents-Partner";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -447,7 +448,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.kellough.Agents-Partner";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
