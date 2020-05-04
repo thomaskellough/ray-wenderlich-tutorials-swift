@@ -44,15 +44,42 @@ class LogViewController: UITableViewController {
     //
     // MARK: - Variables And Properties
     //
-    var searchResults: [Any] = []
+    var searchResults = try! Realm().objects(Specimen.self)
     var searchController: UISearchController!
     var specimens = try! Realm().objects(Specimen.self).sorted(byKeyPath: "name", ascending: true)
     
     //
-    // MARK: - IBActions
+    // MARK: - UISegementedControl Target
     //
-    @IBAction func scopeChanged(sender: Any) {
+    
+    @objc func scopeChanged(_ sender: UISegmentedControl) {
+        let scopeBar = sender
+        let realm = try! Realm()
         
+        switch scopeBar.selectedSegmentIndex {
+        case 1:
+            specimens = realm.objects(Specimen.self).sorted(byKeyPath: "created", ascending: true)
+        default:
+            specimens = realm.objects(Specimen.self).sorted(byKeyPath: "name", ascending: true)
+        }
+        
+        tableView.reloadData()
+    }
+    
+    func filterResultsWithSearchString(searchString: String) {
+        // the [c] indicates a case insensitive search
+        let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString)
+        let scopeIndex = searchController.searchBar.selectedScopeButtonIndex
+        let realm = try! Realm()
+        
+        switch scopeIndex {
+        case 0:
+            searchResults = realm.objects(Specimen.self).filter(predicate).sorted(byKeyPath: "name", ascending: true)
+        case 1:
+            searchResults = realm.objects(Specimen.self).filter(predicate).sorted(byKeyPath: "created", ascending: true)
+        default:
+            searchResults = realm.objects(Specimen.self).filter(predicate)
+        }
     }
     
     
@@ -77,6 +104,8 @@ class LogViewController: UITableViewController {
         
         tableView.tableHeaderView?.addSubview(searchController.searchBar)
         
+        segmentedControl.addTarget(self, action: #selector(scopeChanged), for: .valueChanged)
+        
         definesPresentationContext = true
     }
 }
@@ -93,6 +122,8 @@ extension LogViewController:  UISearchBarDelegate {
 extension LogViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         let searchResultsController = searchController.searchResultsController as! UITableViewController
+        let searchString = searchController.searchBar.text!
+        filterResultsWithSearchString(searchString: searchString)
         searchResultsController.tableView.reloadData()
     }
 }
@@ -102,7 +133,7 @@ extension LogViewController: UISearchResultsUpdating {
 extension LogViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = self.tableView.dequeueReusableCell(withIdentifier: "LogCell") as! LogCell
-        let specimen = specimens[indexPath.row]
+        let specimen = searchController.isActive ? searchResults[indexPath.row] : specimens[indexPath.row]
         
         cell.titleLabel.text = specimen.name
         cell.subtitleLabel.text = specimen.category.name
